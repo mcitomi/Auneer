@@ -6,6 +6,7 @@ import ffmpeg from "fluent-ffmpeg";
 
 console.log(getDevices());
 
+
 // Audio recorder
 
 // Create an instance of AudioIO with inOptions (defaults are as below), which will return a ReadableStream
@@ -49,19 +50,20 @@ const speaker = new Speaker({
 
 // ai.on('data', buf => console.log(buf.timestamp));
 
-const stream = ytdl("https://www.youtube.com/watch?v=db2uW32fkVM", {
+const stream = ytdl("https://www.youtube.com/watch?v=ly9H0R9jFG8", {
     quality: 'highestaudio',
     filter: 'audioonly',
-    highWaterMark: 1 << 27,  // 128mb buffer
+    highWaterMark: 1 << 25, // 30 mb
     timeout: 60000          
 });
 
 // stream.pipe(fs.createWriteStream("writed.mp4"));
 
-
 ffmpeg(stream)
     .audioCodec('pcm_s16le')  // Decode as 16-bit PCM
     .format('s16le')           // Format as raw PCM
+    .inputOptions('-re')      // Real-time processing
+    .audioFilters('aresample=44100,pan=stereo|c0=c0|c1=c1')
     .pipe(speaker, { end: false }); // Pipe the raw PCM data to the speaker
 
 console.log("started");
@@ -70,5 +72,4 @@ console.log("started");
 // setTimeout(() => {
 //     ai.quit();
 //     console.log("stopped");
-
 // }, 10000);
